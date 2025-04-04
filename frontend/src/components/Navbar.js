@@ -24,7 +24,7 @@ function Navbar() {
           </Button>
           {user ? (
             <>
-              <Button color="inherit" component={RouterLink} to="/items/new">
+              <Button color="inherit" component={RouterLink} to="/items/create">
                 Sell Item
               </Button>
               <Button color="inherit" onClick={handleLogout}>
