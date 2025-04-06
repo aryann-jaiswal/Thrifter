@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import './ItemList.css';
@@ -15,11 +15,7 @@ const ItemList = () => {
     search: ''
   });
 
-  useEffect(() => {
-    fetchItems();
-  }, [filters]);
-
-  const fetchItems = async () => {
+  const fetchItems = useCallback(async () => {
     try {
       const queryParams = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
@@ -33,7 +29,11 @@ const ItemList = () => {
       setError('Failed to fetch items. Please try again later.');
       setLoading(false);
     }
-  };
+  }, [filters]);
+
+  useEffect(() => {
+    fetchItems();
+  }, [fetchItems]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;

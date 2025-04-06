@@ -48,9 +48,13 @@ exports.getItem = async (req, res) => {
 // Create new item
 exports.createItem = async (req, res) => {
   try {
+    // Handle uploaded files
+    const images = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
+    
     const item = new Item({
       ...req.body,
-      seller: req.user._id
+      seller: req.user._id,
+      images: images
     });
     
     const newItem = await item.save();

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import './CreateItem.css';
 
 const CreateItem = () => {
@@ -18,6 +18,13 @@ const CreateItem = () => {
   });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Redirect to login if not authenticated
+    if (!token) {
+      navigate('/login');
+    }
+  }, [token, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -42,23 +49,61 @@ const CreateItem = () => {
     setError(null);
 
     try {
+      // Create FormData for file upload
+      const formDataToSend = new FormData();
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('price', formData.price);
+      formDataToSend.append('category', formData.category);
+      formDataToSend.append('condition', formData.condition);
+      formDataToSend.append('location', formData.location);
+
+      // Append each image file
+      const imageInput = document.getElementById('images');
+      const files = imageInput.files;
+      for (let i = 0; i < files.length; i++) {
+        formDataToSend.append('images', files[i]);
+      }
+
       const response = await axios.post(
         'http://localhost:8000/api/items',
-        formData,
+        formDataToSend,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            'Content-Type': 'multipart/form-data'
           }
         }
       );
 
       navigate(`/items/${response.data._id}`);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create item. Please try again.');
-      setLoading(false);
+      if (err.response?.status === 401) {
+        navigate('/login');
+      } else {
+        setError(err.response?.data?.message || 'Failed to create item. Please try again.');
+        setLoading(false);
+      }
     }
   };
+
+  // Show descriptive message if not authenticated
+  if (!token) {
+    return (
+      <div className="auth-message">
+        <h2>Welcome to Thrifter!</h2>
+        <p>To list items for sale, please log in or create an account.</p>
+        <div className="auth-buttons">
+          <button onClick={() => navigate('/login')} className="auth-button login">
+            Log In
+          </button>
+          <button onClick={() => navigate('/register')} className="auth-button register">
+            Create Account
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="create-item-container">

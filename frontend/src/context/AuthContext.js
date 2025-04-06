@@ -7,14 +7,16 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Check if user is logged in on component mount
-    const token = localStorage.getItem('token');
-    if (token) {
+    const storedToken = localStorage.getItem('token');
+    if (storedToken) {
+      setToken(storedToken);
       // TODO: Validate token with backend
-      setUser({ token });
+      setUser({ token: storedToken });
     }
     setLoading(false);
   }, []);
@@ -28,7 +30,8 @@ export const AuthProvider = ({ children }) => {
       });
       const { token, user } = response.data;
       localStorage.setItem('token', token);
-      setUser({ ...user, token });
+      setToken(token);
+      setUser(user);
       return { success: true };
     } catch (error) {
       console.error('Login error:', error);
@@ -49,7 +52,8 @@ export const AuthProvider = ({ children }) => {
       });
       const { token, user } = response.data;
       localStorage.setItem('token', token);
-      setUser({ ...user, token });
+      setToken(token);
+      setUser(user);
       return { success: true };
     } catch (error) {
       console.error('Registration error:', error);
@@ -62,11 +66,12 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    setToken(null);
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ user, token, login, register, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

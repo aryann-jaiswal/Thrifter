@@ -1,11 +1,19 @@
 import React from 'react';
-import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
+import './Navbar.css';
 
-function Navbar() {
-  const { user, logout } = useAuth();
+const Navbar = () => {
+  const { user, token, logout } = useAuth();
   const navigate = useNavigate();
+
+  const handleSellItem = () => {
+    if (!token) {
+      navigate('/login');
+    } else {
+      navigate('/create-item');
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -13,38 +21,40 @@ function Navbar() {
   };
 
   return (
-    <AppBar position="static">
-      <Toolbar>
-        <Typography variant="h6" component={RouterLink} to="/" sx={{ flexGrow: 1, textDecoration: 'none', color: 'inherit' }}>
+    <nav className="navbar">
+      <div className="navbar-content">
+        <RouterLink to="/" className="navbar-brand">
           Thrifter
-        </Typography>
-        <Box>
-          <Button color="inherit" component={RouterLink} to="/items">
+        </RouterLink>
+        
+        <div className="navbar-links">
+          <RouterLink to="/" className="navbar-link">
             Browse Items
-          </Button>
-          {user ? (
+          </RouterLink>
+          <button onClick={handleSellItem} className="navbar-button sell-button">
+            Sell Item
+          </button>
+          {token ? (
             <>
-              <Button color="inherit" component={RouterLink} to="/items/create">
-                Sell Item
-              </Button>
-              <Button color="inherit" onClick={handleLogout}>
+              <span className="user-name">Welcome, {user?.name}</span>
+              <button onClick={handleLogout} className="navbar-button logout">
                 Logout
-              </Button>
+              </button>
             </>
           ) : (
             <>
-              <Button color="inherit" component={RouterLink} to="/login">
+              <RouterLink to="/login" className="navbar-button">
                 Login
-              </Button>
-              <Button color="inherit" component={RouterLink} to="/register">
+              </RouterLink>
+              <RouterLink to="/register" className="navbar-button">
                 Register
-              </Button>
+              </RouterLink>
             </>
           )}
-        </Box>
-      </Toolbar>
-    </AppBar>
+        </div>
+      </div>
+    </nav>
   );
-}
+};
 
 export default Navbar; 
