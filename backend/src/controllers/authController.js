@@ -32,7 +32,17 @@ exports.register = async (req, res) => {
 
     res.status(201).json({ user: userResponse, token });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error('Registration error:', error);
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ message: error.message });
+    }
+    if (error.code === 11000) {
+      return res.status(400).json({ message: 'Email already registered' });
+    }
+    res.status(500).json({ 
+      message: 'Error creating user',
+      error: error.message 
+    });
   }
 };
 

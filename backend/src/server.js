@@ -43,7 +43,14 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/thrifter'
   serverSelectionTimeoutMS: 5000,
   socketTimeoutMS: 45000,
 })
-.then(() => console.log('Connected to MongoDB'))
+.then(() => {
+  console.log('Connected to MongoDB');
+  // Start server only after successful database connection
+  const PORT = process.env.PORT || 8000;
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+})
 .catch((err) => {
   console.error('MongoDB connection error:', err);
   process.exit(1); // Exit if cannot connect to database
@@ -51,8 +58,11 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/thrifter'
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Something went wrong!' });
+  console.error('Server error:', err);
+  res.status(500).json({ 
+    message: 'Something went wrong!',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
 });
 
 // Start server
